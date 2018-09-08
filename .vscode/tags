@@ -1,0 +1,40 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+__init__	../client.py	/^    def __init__(self, given_port, server_ip):$/;"	kind:member	line:10
+__init__	../server.py	/^    def __init__(self, server_port, connection_num):$/;"	kind:member	line:12
+_thread	../server.py	/^import _thread$/;"	kind:namespace	line:7
+broadcast	../server.py	/^    def broadcast(self, msg, conn):$/;"	kind:member	line:45
+chat	../client.py	/^    def chat(self):$/;"	kind:member	line:16
+chat_client	../client.py	/^    chat_client = client(port, server)$/;"	kind:variable	line:57
+chat_server	../server.py	/^    chat_server = server(port, conn_num)$/;"	kind:variable	line:83
+client	../client.py	/^class client:$/;"	kind:class	line:8
+client.py	../client.py	1;"	kind:file	line:1
+clientThread	../server.py	/^    def clientThread(self, conn, addr):$/;"	kind:member	line:24
+conn_num	../server.py	/^    conn_num = int(sys.argv[2])$/;"	kind:variable	line:82
+decrypt	../encryption.py	/^def decrypt(cipher):$/;"	kind:function	line:11
+encrypt	../encryption.py	/^def encrypt(text):$/;"	kind:function	line:7
+encryption.py	../encryption.py	1;"	kind:file	line:1
+gen_key	../encryption.py	/^def gen_key():$/;"	kind:function	line:15
+gen_key	../server.py	/^    def gen_key(self):$/;"	kind:member	line:75
+get_key	../client.py	/^    def get_key(self):$/;"	kind:member	line:41
+offline	../server.py	/^    def offline(self):$/;"	kind:member	line:71
+online	../server.py	/^    def online(self):$/;"	kind:member	line:59
+port	../client.py	/^    port = int(sys.argv[2])$/;"	kind:variable	line:55
+port	../server.py	/^    port = int(sys.argv[1])$/;"	kind:variable	line:81
+pyDes	../client.py	/^import pyDes$/;"	kind:namespace	line:5
+random	../server.py	/^import random$/;"	kind:namespace	line:4
+remove_conn	../server.py	/^    def remove_conn(self, conn):$/;"	kind:member	line:54
+select	../client.py	/^import select$/;"	kind:namespace	line:3
+select	../server.py	/^import select$/;"	kind:namespace	line:3
+server	../client.py	/^    server = str(sys.argv[1])$/;"	kind:variable	line:54
+server	../server.py	/^class server:$/;"	kind:class	line:10
+server.py	../server.py	1;"	kind:file	line:1
+socket	../client.py	/^import socket$/;"	kind:namespace	line:2
+socket	../server.py	/^import socket$/;"	kind:namespace	line:2
+string	../server.py	/^import string$/;"	kind:namespace	line:6
+sys	../client.py	/^import sys$/;"	kind:namespace	line:4
+sys	../server.py	/^import sys$/;"	kind:namespace	line:5

@@ -1,82 +1,78 @@
-### Back-end
+
 import socket
 import select
-import random
 import sys
-import string
-import _thread
+from random import choice
+from string import ascii_letters
+from thread import *
 
 
-class server:
+def server_online(port, num_conn):
 
-    def __init__(self, server_port, connection_num):
-        self.host_ip = socket.gethostbyname(socket.gethostname())
-        self.port = server_port
-        self.connect_num = connection_num
-        self.des_k = self.gen_key()
-        self.clients = []
+    ip = socket.gethostbyname(socket.gethostname())
+    des_key = gen_key()
+    list_of_clients = []
 
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server.bind((self.host_ip, self.port))
-        self.server.listen(self.connect_num)
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind((ip, port))
+    server.listen(num_conn)
 
-    def clientThread(self, conn, addr):
-        """ Receive and broadcast client's msg"""
-        try:
-            # send each client connected the same key
-            conn.send(self.des_k)
-            conn.send("Welcome!")
-        except:
-            ConnectionAbortedError
+    while True:
+        conn, addr = server.accept()
+        list_of_clients.append(conn)
+        print addr[0] + " connected"
 
-        while True:
+        start_new_thread(clientthread, (conn, addr))
+
+    conn.close()
+    server.close()
+
+
+def gen_key():
+    return "".join([choice(ascii_letters) for x in range(8)])
+
+
+def clientthread(conn, addr):
+    # initial key
+    conn.send(des_key)
+
+    conn.send("Welcome to this chatroom!")
+    while True:
             try:
-                msg = conn.recv(4096)
-                if msg:
-                    broadcast_msg = "[" + addr[0] + "] " + msg
-                    print(broadcast_msg)
-                    self.broadcast(broadcast_msg, conn)
+                message = conn.recv(2048)
+                if message:
+                    print "<" + addr[0] + "> " + message
+                    message_to_send = message
+                    broadcast(message_to_send, conn)
+
                 else:
-                    self.remove_conn(conn)
+                    remove(conn)
             except:
                 continue
 
-    def broadcast(self, msg, conn):
-        """ Send msg to every client"""
-        for client in self.clients:
-            if client != conn:
-                try:
-                    client.send(msg)
-                except:
-                    client.close()
 
-    def remove_conn(self, conn):
-        """ remove connections from client list"""
-        if conn in self.clients:
-            self.clients.remove(conn)
+def broadcast(message, connection):
+    for clients in list_of_clients:
+        if clients != connection:
+            try:
+                clients.send(message)
+            except:
+                clients.close()
+                remove(clients)
 
-    def online(self):
-        """ Enable the server """
-        while True:
-            conn, addr = self.server.accept()
-            self.clients.append(conn)
-            print(addr[0], " connected")
-            _thread.start_new_thread(self.clientThread, (conn, addr))
 
-    def offline(self):
-        """ Turn off server"""
-        self.server.close()
-
-    def gen_key(self):
-        """ random generate 64 bytes key"""
-        return "".join([random.choice(string.ascii_letters) for x in range(8)])
+def remove(connection):
+    if connection in list_of_clients:
+        list_of_clients.remove(connection)
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print "python <script.py> <port> <number of connections>"
+        exit()
+
     port = int(sys.argv[1])
     conn_num = int(sys.argv[2])
 
-    chat_server = server(port, conn_num)
-    chat_server.online()
-    chat_server.offline()
+    server_online(port, conn_num)

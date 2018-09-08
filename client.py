@@ -1,59 +1,46 @@
-## front end user interface
+
+# Python program to implement client side of chat room.
 import socket
 import select
 import sys
 import pyDes
 
 
-class client:
+def start_chat(ip, port):
+    # start server
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.connect((ip, port))
 
-    def __init__(self, given_port, server_ip):
-        self.ip = server_ip
-        self.port = given_port
-        self.des_k = None
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # get des key in plaintext
+    sockets_list = [sys.stdin, server]
+    read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])
+    for socks in read_sockets:
+        if socks == server:
+            des_key = socks.recv(8)
+        else:
+            print("Key not received \nInsecure Connection")
+    temp_des = pyDes.des(des_key, pyDes.CBC, "\0\0\0\0\0\0\0\0", pad=None, padmode=pyDes.PAD_PKCS5)
 
-    def chat(self):
-        """ Client's chat function"""
-        self.server.connect((self.ip, self.port))
-        self.get_key()
-        k = pyDes.des(self.des_k, pyDes.CBC, b"\0\0\0\0\0\0\0\0", pad=None, padmode=pyDes.PAD_PKCS5)
-        while True:
-            socket_list = [sys.stdin, self.server]
-            read_sockets, write_socket, err_socket = select.select(socket_list, [], [])
+    # loop text
+    while True:
+        # maintains a list of possible input streams
+        sockets_list = [sys.stdin, server]
+        read_sockets,write_socket, error_socket = select.select(sockets_list,[],[])
 
-            for sok in read_sockets:
-                if sok == self.server:
-                    msg = sok.recv(4096)
-                    #ciphertext
-                    print(msg)
-                    #message decrypt
-                    print(k.decrypt(msg))
-
-                else:
-                    msg = sys.stdin.readline()
-                    sys.stdout.write("[me]")
-                    sys.stdout.write(msg)
-                    # encrypt msg before sending
-                    self.server.send(k.encrypt(msg))
-                    sys.stdout.flush()
-
-        self.server.close()
-
-    def get_key(self):
-        socket_list = [sys.stdin, self.server]
-        read_sockets, write_socket, err_socket = select.select(socket_list, [], [])
-
-        for sok in read_sockets:
-            if sok == self.server:
-                self.des_k = (sok.recv(64)).encode()
-                print("key received")
+        for socks in read_sockets:
+            if socks == server:
+                message = socks.recv(2048)
+                print "Encrypted Message: " + message
+                print temp_des.decrypt(message)
             else:
-                ConnectionAbortedError
+                message = temp_des.encrypt(sys.stdin.readline())
+                server.send(message)
+                sys.stdout.flush()
+    server.close()
+
 
 if __name__ == "__main__":
-    server = str(sys.argv[1])
+    # get init input
+    ip = str(sys.argv[1])
     port = int(sys.argv[2])
-
-    chat_client = client(port, server)
-    chat_client.chat()
+    start_chat(ip, port)
