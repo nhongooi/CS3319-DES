@@ -6,13 +6,14 @@ from random import choice
 from string import ascii_letters
 from thread import *
 
+list_of_clients = []
+
 
 def server_online(port, num_conn):
 
     ip = socket.gethostbyname(socket.gethostname())
     des_key = gen_key()
-    list_of_clients = []
-
+    hmac_key = gen_key()
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((ip, port))
@@ -23,7 +24,7 @@ def server_online(port, num_conn):
         list_of_clients.append(conn)
         print addr[0] + " connected"
 
-        start_new_thread(clientthread, (conn, addr))
+        start_new_thread(clientthread, (conn, addr, des_key, hmac_key))
 
     conn.close()
     server.close()
@@ -33,19 +34,17 @@ def gen_key():
     return "".join([choice(ascii_letters) for x in range(8)])
 
 
-def clientthread(conn, addr):
+def clientthread(conn, addr, des_key, hmac_key):
     # initial key
-    conn.send(des_key)
+    conn.send(''.join((des_key, hmac_key)))
 
-    conn.send("Welcome to this chatroom!")
     while True:
             try:
-                message = conn.recv(2048)
+                message = conn.recv(4096)
                 if message:
                     print "<" + addr[0] + "> " + message
-                    message_to_send = message
-                    broadcast(message_to_send, conn)
 
+                    broadcast(message, conn)
                 else:
                     remove(conn)
             except:
