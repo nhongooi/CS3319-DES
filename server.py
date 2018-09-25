@@ -36,14 +36,13 @@ def gen_key():
 
 def clientthread(conn, addr, des_key, hmac_key):
     # initial key
-    conn.send(''.join((des_key, hmac_key)))
+    conn.send("".join((des_key, hmac_key)))
 
     while True:
             try:
                 message = conn.recv(4096)
                 if message:
                     print "<" + addr[0] + "> " + message
-
                     broadcast(message, conn)
                 else:
                     remove(conn)

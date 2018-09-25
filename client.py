@@ -5,6 +5,7 @@ import select
 import sys
 import pyDes
 import string
+import hashlib
 import hmac
 
 def start_chat(ip, port):
@@ -26,28 +27,27 @@ def start_chat(ip, port):
             print("Key not received \nInsecure Connection")
     temp_des = pyDes.des(des_key, pyDes.CBC, "\0\0\0\0\0\0\0\0", pad=None, padmode=pyDes.PAD_PKCS5)
 
-    print "DES key: " + des_key
-    print "HMAC key: " + hmac_key
     # loop text
     while True:
         # maintains a list of possible input streams
         sockets_list = [sys.stdin, server]
         read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])
-        digest_maker = hmac.new(hmac_key)
 
         for socks in read_sockets:
             if socks == server:
                 message = temp_des.decrypt(socks.recv(4096))
-                dec_msg, hash_msg = message.rstrip().split('=')
-                digest = hmac.new(hmac_key, msg=dec_msg.encode('utf-8')).hexdigest()
+                dec_msg = message[:-40]
+                hash_msg = message[-40:]
+                digest = hmac.new(hmac_key, dec_msg, hashlib.sha1).hexdigest()
 
-                print hmac.compare_digest(hash_msg, digest)
-                print dec_msg
+                if hmac.compare_digest(hash_msg, digest):
+                    print("[Authenticated] " + dec_msg)
+                else:
+                    print("[False] " + dec_msg)
             else:
                 message = sys.stdin.readline()
-                digest_maker.update(message)
-                message = message[:-1] + '=' + digest_maker.hexdigest()
-                server.send(temp_des.encrypt(message.encode('utf-8')))
+                message = message[:-1] + hmac.new(hmac_key, message[:-1], hashlib.sha1).hexdigest()
+                server.send(temp_des.encrypt(message))
                 sys.stdout.flush()
     server.close()
 
